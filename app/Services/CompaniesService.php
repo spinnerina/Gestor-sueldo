@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
-use App\Repositories\Contracts\CompaniesRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\RoleUser;
 use App\Models\Companies;
+use App\Services\RoleUserService;
 use Illuminate\Support\Facades\DB;
+use App\Repositories\RoleUserRepository;
+use Illuminate\Database\Eloquent\Collection;
+use App\Repositories\Contracts\CompaniesRepositoryInterface;
 
 class CompaniesService extends BaseService
 {
@@ -24,10 +27,17 @@ class CompaniesService extends BaseService
         $relations = ['user'];
         $columns = ['*'];
         $user = auth()->user();
-        if($user->role_id == 1){
-            return $this->companiesRepository->all($columns, $relations);
-        }else{
-            return $this->companiesRepository->all($columns, $relations)->where('created_by_user_id', $user->id);
+        $where = ['status' => 1];
+        $roleUserService = new RoleUserService(new RoleUserRepository(new RoleUser()));
+        $roleUser = $roleUserService->findRoleUser(['user_id' => $user->id]);
+        if($roleUser->role_id == 1)
+        {
+            return $this->companiesRepository->all($where, $columns, $relations);
+        }
+        else
+        {
+            $where['created_by_user_id'] = $user->id;
+            return $this->companiesRepository->all($where, $columns, $relations);
         }
     }
 

@@ -23,9 +23,9 @@ class BaseRepository
     /**
      * Get all records
      */
-    public function all(array $columns = ['*'], array $relations = []): Collection
+    public function all(array $where = [], array $columns = ['*'], array $relations = []): Collection
     {
-        return $this->model->with($relations)->get($columns);
+        return $this->model->with($relations)->where($where)->get($columns);
     }
 
     /**

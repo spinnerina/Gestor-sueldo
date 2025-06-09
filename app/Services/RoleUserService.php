@@ -14,6 +14,11 @@ class RoleUserService extends BaseService
         $this->roleUserRepository = $roleUserRepository;
     }
 
+    public function findRoleUser(array $where = []): ?RoleUser
+    {
+        return $this->roleUserRepository->findBy($where, ['user_id', 'role_id']);
+    }
+
     public function assignRole(int $userId, int $roleId): ?RoleUser
     {
         $object = [

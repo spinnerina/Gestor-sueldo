@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface CompaniesRepositoryInterface
 {
-    public function all(array $columns = ['*'], array $relations = []): Collection;
+    public function all(array $where = [], array $columns = ['*'], array $relations = []): Collection;
     public function find(int $id, array $columns = ['*'], array $relations = []): ?Companies;
     public function create(array $payload): Companies;
     public function update(int $id, array $payload): Companies;
