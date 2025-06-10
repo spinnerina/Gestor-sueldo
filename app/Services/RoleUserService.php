@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\Contracts\RoleUserRepositoryInterface;
 use App\Models\RoleUser;
+use Illuminate\Database\Eloquent\Collection;
 
 class RoleUserService extends BaseService
 {
@@ -12,6 +13,12 @@ class RoleUserService extends BaseService
     public function __construct(RoleUserRepositoryInterface $roleUserRepository)
     {
         $this->roleUserRepository = $roleUserRepository;
+    }
+
+    public function getRoleUser(): Collection
+    {
+        $relations = ['user', 'role'];
+        return $this->roleUserRepository->all([], ['*'], $relations);
     }
 
     public function findRoleUser(array $where = []): ?RoleUser

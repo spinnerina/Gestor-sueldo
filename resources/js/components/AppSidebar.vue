@@ -18,6 +18,10 @@ const mainNavItems: NavItem[] = [
         title: 'Companies',
         href: '/companies',
     },
+    {
+        title: 'Role User',
+        href: '/roleUser',
+    },
 ];
 
 const footerNavItems: NavItem[] = [];

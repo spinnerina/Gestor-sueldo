@@ -30,7 +30,7 @@ class CompaniesService extends BaseService
         $where = ['status' => 1];
         $roleUserService = new RoleUserService(new RoleUserRepository(new RoleUser()));
         $roleUser = $roleUserService->findRoleUser(['user_id' => $user->id]);
-        if($roleUser->role_id == 1)
+        if($roleUser != null && $roleUser->role_id == 1)
         {
             return $this->companiesRepository->all($where, $columns, $relations);
         }

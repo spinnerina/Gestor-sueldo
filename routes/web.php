@@ -2,10 +2,11 @@
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\CompaniesController;
 use App\Http\Controllers\Api\JobsController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\RoleUserController;
 use App\Http\Controllers\Api\SalariesController;
+use App\Http\Controllers\Api\CompaniesController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -17,6 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::apiResource('jobs', JobsController::class);
         Route::apiResource('salaries', SalariesController::class);
         Route::apiResource('users', UserController::class);
+        Route::apiResource('roleUser', RoleUserController::class);
     });
 
     // Web Routes with Inertia
@@ -32,6 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/companies/{company}/edit', [CompaniesController::class, 'edit'])->name('companies.edit');
     Route::put('/companies/{company}', [CompaniesController::class, 'update'])->name('companies.update');
     Route::delete('/companies/{company}', [CompaniesController::class, 'destroy'])->name('companies.destroy');
+
+
+    // Role User web routes
+    Route::get('/roleUser', [RoleUserController::class, 'index'])->name('roleUser.index');
+    Route::delete('/roleUser/{user_id}/{role_id}', [RoleUserController::class, 'destroy'])->name('roleUser.destroy');
 });
 
 require __DIR__.'/settings.php';
