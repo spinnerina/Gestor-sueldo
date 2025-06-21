@@ -5,8 +5,12 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { LayoutGrid } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const role = page.props.auth.role_user;
 
 const mainNavItems: NavItem[] = [
     {
@@ -18,10 +22,10 @@ const mainNavItems: NavItem[] = [
         title: 'Companies',
         href: '/companies',
     },
-    {
+    ...(role.role_id === 1 ? [{
         title: 'Role User',
-        href: '/roleUser',
-    },
+        href: "/roleUser",
+    }] : []),
 ];
 
 const footerNavItems: NavItem[] = [];

@@ -2,15 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\Request;
 use App\Services\AuthService;
-use Illuminate\Validation\Rules;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Auth\Events\Registered;
@@ -44,8 +39,8 @@ class RegisteredUserController extends Controller
                 return back()->withErrors(['error' => 'Failed to create user']);
             }
             event(new Registered($user));
-            Auth::login($user);
-            return redirect()->route('dashboard');
+            $this->authService->login($request);
+            return redirect()->route('dashboard', absolute: false);
         }catch(\Exception $e){
             return back()->withErrors(['error' => $e->getMessage()]);
         }

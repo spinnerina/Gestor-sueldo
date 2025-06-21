@@ -1,6 +1,9 @@
 <?php
 
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\JobsController;
 use App\Http\Controllers\Api\UserController;
@@ -37,8 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // Role User web routes
-    Route::get('/roleUser', [RoleUserController::class, 'index'])->name('roleUser.index');
-    Route::delete('/roleUser/{user_id}/{role_id}', [RoleUserController::class, 'destroy'])->name('roleUser.destroy');
+    Route::get('/roleUser', [RoleUserController::class, 'index'])->name('roleUser.index')->middleware('role:admin');
+    Route::delete('/roleUser/{user_id}/{role_id}', [RoleUserController::class, 'destroy'])->name('roleUser.destroy')->middleware('role:admin');
 });
 
 require __DIR__.'/settings.php';

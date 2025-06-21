@@ -6,6 +6,8 @@ use App\Models\RoleUser;
 use App\Models\Companies;
 use App\Services\RoleUserService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Cache;
 use App\Repositories\RoleUserRepository;
 use Illuminate\Database\Eloquent\Collection;
 use App\Repositories\Contracts\CompaniesRepositoryInterface;
@@ -13,31 +15,32 @@ use App\Repositories\Contracts\CompaniesRepositoryInterface;
 class CompaniesService extends BaseService
 {
     protected $companiesRepository;
+    protected $tll;
 
-    public function __construct(CompaniesRepositoryInterface $companiesRepository)
+    public function __construct(CompaniesRepositoryInterface $companiesRepository, int $minutes = 10)
     {
         $this->companiesRepository = $companiesRepository;
+        $this->tll = now()->addMinutes($minutes);
     }
 
     /**
      * Get all companies
      */
-    public function getAllCompanies(): Collection
+    public function getAllCompanies(Array $columns = ['*'], Array $relations = ['user']): Collection
     {
-        $relations = ['user'];
-        $columns = ['*'];
-        $user = auth()->user();
-        $where = ['status' => 1];
-        $roleUserService = new RoleUserService(new RoleUserRepository(new RoleUser()));
-        $roleUser = $roleUserService->findRoleUser(['user_id' => $user->id]);
-        if($roleUser != null && $roleUser->role_id == 1)
-        {
-            return $this->companiesRepository->all($where, $columns, $relations);
-        }
-        else
-        {
-            $where['created_by_user_id'] = $user->id;
-            return $this->companiesRepository->all($where, $columns, $relations);
+        if (Gate::allows('viewAny', Companies::class)) {
+            return Cache::store('redis')->tags(['companies'])->remember('companies.all', $this->tll, function() use ($columns, $relations){
+                return $this->companiesRepository->all(['status' => 1], $columns, $relations);
+            });
+        } else {
+            $user = auth()->user();
+            $where = [
+                'status' => 1,
+                'created_by_user_id' => $user->id
+            ];
+            return Cache::store('redis')->tags(['companies'])->remember('companies.all', $this->tll, function() use ($columns, $relations, $where){
+                return $this->companiesRepository->all($where, $columns, $relations);
+            });
         }
     }
 
@@ -46,7 +49,9 @@ class CompaniesService extends BaseService
      */
     public function getCompanyById(int $companyId): ?Companies
     {
-        return $this->companiesRepository->find($companyId);
+        return Cache::tags(['companies'])->remember("companies.find.{$companyId}", $this->tll, function() use($companyId){
+            return $this->companiesRepository->find($companyId);
+        });
     }
 
     /**
@@ -60,6 +65,7 @@ class CompaniesService extends BaseService
             $payload['created_by_user_id'] = $user;
             $company = $this->companiesRepository->create($payload);
             DB::commit();
+            Cache::tags(['companies'])->forget('companies.all');
             return $company;
         }catch(\Exception $e){
             DB::rollBack();
@@ -81,6 +87,8 @@ class CompaniesService extends BaseService
         try{
             $updatedCompany = $this->companiesRepository->update($companyId, $payload);
             DB::commit();
+            Cache::tags(['companies'])->forget("companies.find.{$companyId}");
+            Cache::tags(['companies'])->forget('companies.all');
             return $updatedCompany;
         }catch(\Exception $e){
             DB::rollBack();
@@ -103,6 +111,7 @@ class CompaniesService extends BaseService
         try{
             $deleted = $this->companiesRepository->delete($companyId);
             DB::commit();
+            Cache::tags(['companies'])->forget('companies.all');
             return $deleted;
         }catch(\Exception $e){
             DB::rollBack();
